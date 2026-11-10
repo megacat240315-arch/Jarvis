@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>J.A.R.V.I.S.</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #00e5ff;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+
+  /* Фон с сеткой */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove {
+    from { background-position: 0 0; }
+    to { background-position: 40px 40px; }
+  }
+
+  .container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  /* Заголовок */
+  .title {
+    position: absolute;
+    top: 30px;
+    font-size: 14px;
+    letter-spacing: 4px;
+    opacity: 0.7;
+  }
+  .title span { color: #fff; }
+
+  /* Центральный круг Джарвиса */
+  .core {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ring {
+    position: absolute;
+    border: 2px solid #00e5ff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+  }
+  .ring-1 { width: 100%; height: 100%; animation: spin 8s linear infinite; }
+  .ring-2 { width: 80%; height: 80%; animation: spin 5s linear infinite reverse; border-color: #00b8d4; }
+  .ring-3 { width: 60%; height: 60%; animation: spin 3s linear infinite; border-style: dashed; }
+
+  .core-center {
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, #00e5ff 0%, #006064 70%, transparent 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 40px #00e5ff, inset 0 0 20px rgba(0,0,0,0.5);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 80px #00e5ff; }
+  }
+
+  /* Состояние "говорит" */
+  .speaking .core-center {
+    animation: speakPulse 0.4s ease-in-out infinite;
+    background: radial-gradient(circle, #ff00aa 0%, #6a0040 70%, transparent 100%);
+    box-shadow: 0 0 60px #ff00aa;
+  }
+  @keyframes speakPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+  }
+
+  /* Угловые HUD элементы */
+  .hud {
+    position: absolute;
+    font-size: 10px;
+    opacity: 0.6;
+    letter-spacing: 2px;
+  }
+  .hud-tl { top: 70px; left: 20px; }
+  .hud-tr { top: 70px; right: 20px; text-align: right; }
+  .hud-bl { bottom: 120px; left: 20px; }
+  .hud-br { bottom: 120px; right: 20px; text-align: right; }
+
+  /* Панель ответа */
+  .response {
+    position: absolute;
+    bottom: 60px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    min-height: 60px;
+    padding: 15px;
+    background: rgba(0, 229, 255, 0.05);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .response .label {
+    font-size: 10px;
+    opacity: 0.5;
+    letter-spacing: 3px;
+    margin-bottom: 5px;
+  }
+
+  /* Кнопка микрофона */
+  .mic-btn {
+    position: absolute;
+    bottom: 140px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(0, 229, 255, 0.1);
+    border: 2px solid #00e5ff;
+    color: #00e5ff;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mic-btn:active { transform: scale(0.9); }
+  .mic-btn.active {
+    background: #00e5ff;
+    color: #000;
+    box-shadow: 0 0 30px #00e5ff;
+    animation: micPulse 1s infinite;
+  }
+  @keyframes micPulse {
+    0%, 100% { box-shadow: 0 0 30px #00e5ff; }
+    50% { box-shadow: 0 0 50px #00e5ff, 0 0 80px #00e5ff; }
+  }
+
+  /* Статус */
+  .status {
+    position: absolute;
+    bottom: 20px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="title">J.A.R.V.I.S. <span>v2.0</span></div>
+
+    <div class="hud hud-tl">
+      СИСТЕМА: <span style="color:#0f0">АКТИВНА</span><br>
+      CPU: 42%<br>
+      RAM: 68%
+    </div>
+    <div class="hud hud-tr">
+      <div id="clock">00:00:00</div>
+      <div id="date">--.--.----</div>
+    </div>
+    <div class="hud hud-bl">ЛОКАЦИЯ: МОСКВА<br>СВЯЗЬ: СТАБИЛЬНАЯ</div>
+    <div class="hud hud-br">СЕРВЕР: ONLINE<br>ШИФР: AES-256</div>
+
+    <div class="core">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+      <div class="core-center"></div>
+    </div>
+
+    <button class="mic-btn" id="micBtn">🎤</button>
+
+    <div class="response">
+      <div class="label">// СООБЩЕНИЕ //</div>
+      <div id="responseText">Нажмите на микрофон и скажите команду</div>
+    </div>
+
+    <div class="status" id="status">СТАТУС: ОЖИДАНИЕ</div>
+  </div>
+
+<script>
+  const micBtn = document.getElementById('micBtn');
+  const responseText = document.getElementById('responseText');
+  const statusEl = document.getElementById('status');
+  const container = document.getElementById('container');
+  const clockEl = document.getElementById('clock');
+  const dateEl = document.getElementById('date');
+
+  // Часы
+  function updateClock() {
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString('ru-RU');
+    dateEl.textContent = now.toLocaleDateString('ru-RU');
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Синтез речи
+  function speak(text) {
+    responseText.textContent = text;
+    container.classList.add('speaking');
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'ru-RU';
+    utter.rate = 1;
+    utter.pitch = 0.9;
+    utter.onend = () => container.classList.remove('speaking');
+    speechSynthesis.speak(utter);
+  }
+
+  // Обработка команд
+  function processCommand(cmd) {
+    cmd = cmd.toLowerCase().trim();
+    responseText.textContent = 'Вы: ' + cmd;
+
+    if (cmd.includes('привет') || cmd.includes('здравствуй')) {
+      speak('Приветствую, сэр. Все системы в норме.');
+    } else if (cmd.includes('как дела') || cmd.includes('как ты')) {
+      speak('Функционирую в штатном режиме. Готов к выполнению задач.');
+    } else if (cmd.includes('время') || cmd.includes('который час')) {
+      const t = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+      speak('Сейчас ' + t);
+    } else if (cmd.includes('дата') || cmd.includes('какое число') || cmd.includes('сегодня')) {
+      const d = new Date().toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+      speak('Сегодня ' + d);
+    } else if (cmd.includes('шутк') || cmd.includes('анекдот') || cmd.includes('смешно')) {
+      const jokes = [
+        'Почему программисты путают Хэллоуин и Рождество? Потому что OCT 31 = DEC 25.',
+        'В мире есть 10 типов людей: те, кто понимает двоичный код, и те, кто нет.',
+        'Жена программиста просит: сходи в магазин, купи батон хлеба. Если будут яйца — возьми десяток. Программист вернулся с десятью батонами.'
+      ];
+      speak(jokes[Math.floor(Math.random() * jokes.length)]);
+    } else if (cmd.includes('кто ты') || cmd.includes('что ты')) {
+      speak('Я Джарвис, ваш персональный ИИ-ассистент.');
+    } else if (cmd.includes('спасибо')) {
+      speak('Всегда к вашим услугам, сэр.');
+    } else if (cmd.includes('пока') || cmd.includes('до свидания')) {
+      speak('До встречи. Перехожу в режим ожидания.');
+    } else if (cmd.includes('запуск') || cmd.includes('старт')) {
+      speak('Инициирую протокол запуска. Все системы активированы.');
+    } else {
+      speak('Команда не распознана. Повторите, пожалуйста.');
+    }
+  }
+
+  // Распознавание речи
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition;
+
+  if (SpeechRec) {
+    recognition = new SpeechRec();
+    recognition.lang = 'ru-RU';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      micBtn.classList.add('active');
+      statusEl.textContent = 'СТАТУС: СЛУШАЮ...';
+    };
+    recognition.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      processCommand(text);
+    };
+    recognition.onerror = (e) => {
+      statusEl.textContent = 'СТАТУС: ОШИБКА';
+      micBtn.classList.remove('active');
+      speak('Не удалось расслышать, сэр.');
+    };
+    recognition.onend = () => {
+      micBtn.classList.remove('active');
+      statusEl.textContent = 'СТАТУС: ОЖИДАНИЕ';
+    };
+
+    micBtn.addEventListener('click', () => {
+      if (micBtn.classList.contains('active')) {
+        recognition.stop();
+      } else {
+        try { recognition.start(); } catch(e) {}
+      }
+    });
+  } else {
+    responseText.textContent = 'Ваш браузер не поддерживает распознавание речи';
+    micBtn.style.display = 'none';
+  }
+
+  // Приветствие при запуске
+  setTimeout(() => speak('Джарвис активирован. Готов к работе, сэр.'), 800);
+</script>
+</body>
+</html>
